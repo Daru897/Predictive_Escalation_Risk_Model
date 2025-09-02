@@ -164,4 +164,15 @@ Generate embeddings and sentiment from ticket event text.
 - Computed sentiment polarity with TextBlob
 - Stored results in `features_text` table
 
+## 🚀 Sprint 6 — Feature Store Assembly
+
+### Goal
+Merge structured + text features with labels into a training dataset.
+
+### What was done
+- Loaded `features_core` (numeric features), `features_text` (embeddings + sentiment), and `tickets` (escalated_flag).
+- Merged into a single table `features_store`.
+- Exported dataset to `data/training_dataset.csv`.
+- Performed quick data quality checks (missing values, label distribution).
+
 
