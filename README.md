@@ -118,3 +118,30 @@ text
 3. **Technical Precision** - Clear specs without overwhelming detail
 4. **Actionable Setup** - Copy-paste ready commands
 5. **Storytelling** - Connects technical work to business outcomes
+
+
+SPRINT 3 - ## 🚀 Sprint 3 — ETL Pipeline (Supabase Integration)
+
+### Goal
+Automate data cleaning and transformation from raw Supabase tables into `_clean` tables, ready for feature engineering.
+
+### What was done
+- Created `etl/load_data.py`  
+- Added **table-specific cleaning functions**:
+  - `clean_customers` → validates emails, normalizes regions
+  - `clean_agents` → enforces numeric/non-negative `experience_years`, standardizes department names
+  - `clean_tickets` → validates timestamps, normalizes status & priority
+  - `clean_ticket_events` → validates event types, removes PII from descriptions
+- Created `_clean` tables (`customers_clean`, `agents_clean`, `tickets_clean`, `ticket_events_clean`) in Supabase
+- Inserted ETL logs into `etl_logs` table to track each run
+
+### How to run
+```bash
+# Run ETL pipeline
+python etl/load_data.py
+ 
+Verify in Supabase
+
+-- Check cleaned tables
+SELECT COUNT(*) FROM tickets_clean;
+SELECT * FROM etl_logs ORDER BY run_time DESC;
