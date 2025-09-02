@@ -107,11 +107,6 @@ Week 3: API + dashboard integration
 
 Week 4: LLM explanations & alerting
 
-# 📜 License
-MIT License - See LICENSE
-
-text
-
 ### Key Features:
 1. **Business-Focused** - Lead with ROI and stakeholder benefits
 2. **Visual Hierarchy** - Icons, tables, and mermaid diagrams for scannability
@@ -120,7 +115,7 @@ text
 5. **Storytelling** - Connects technical work to business outcomes
 
 
-SPRINT 3 - ## 🚀 Sprint 3 — ETL Pipeline (Supabase Integration)
+## 🚀 Sprint 3 — ETL Pipeline (Supabase Integration)
 
 ### Goal
 Automate data cleaning and transformation from raw Supabase tables into `_clean` tables, ready for feature engineering.
@@ -135,12 +130,6 @@ Automate data cleaning and transformation from raw Supabase tables into `_clean`
 - Created `_clean` tables (`customers_clean`, `agents_clean`, `tickets_clean`, `ticket_events_clean`) in Supabase
 - Inserted ETL logs into `etl_logs` table to track each run
 
-### How to run
-```bash
-# Run ETL pipeline
-python etl/load_data.py
- 
-Verify in Supabase
 
 -- Check cleaned tables
 SELECT COUNT(*) FROM tickets_clean;
@@ -162,7 +151,17 @@ Generate engineered features from tickets and events for model training.
   - **experience_years** → agent experience
 - Stored results in a new table `features_core` in Supabase
 
-### How to run
-```bash
-python etl/feature_engineering.py
+
+## 🚀 Sprint 5 — Text Processing Pipeline
+
+### Goal
+Generate embeddings and sentiment from ticket event text.
+
+### What was done
+- Cleaned text (removed PII, normalized case)
+- Aggregated all ticket events into one document per ticket
+- Generated embeddings using `sentence-transformers` (`all-MiniLM-L6-v2`)
+- Computed sentiment polarity with TextBlob
+- Stored results in `features_text` table
+
 
