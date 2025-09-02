@@ -145,3 +145,24 @@ Verify in Supabase
 -- Check cleaned tables
 SELECT COUNT(*) FROM tickets_clean;
 SELECT * FROM etl_logs ORDER BY run_time DESC;
+
+## 🚀 Sprint 4 — Core Feature Engineering (Non-Text)
+
+### Goal
+Generate engineered features from tickets and events for model training.
+
+### What was done
+- Created `etl/feature_engineering.py`
+- Extracted the following features:
+  - **ticket_age_hrs** → hours since ticket was created
+  - **num_transfers** → count of `"Updated"` events
+  - **num_msgs_first_2h** → number of `"Commented"` events within first 2 hours
+  - **avg_response_time_secs** → average gap (in seconds) between comment events
+  - **region** → customer region
+  - **experience_years** → agent experience
+- Stored results in a new table `features_core` in Supabase
+
+### How to run
+```bash
+python etl/feature_engineering.py
+
