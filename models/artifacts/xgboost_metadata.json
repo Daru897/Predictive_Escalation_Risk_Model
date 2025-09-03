@@ -1,0 +1,22 @@
+{
+  "model_name": "xgboost",
+  "timestamp": "2025-09-03T05:43:19.484954",
+  "metrics": {
+    "precision": 0.8,
+    "recall": 0.6666666666666666,
+    "f1_score": 0.7272727272727273,
+    "roc_auc": 0.41666666666666663
+  },
+  "feature_names": [
+    "ticket_age_hrs",
+    "num_transfers",
+    "num_msgs_first_2h",
+    "avg_response_time_secs",
+    "region",
+    "experience_years",
+    "sentiment",
+    "age_transfers_interaction",
+    "msgs_per_response_ratio"
+  ],
+  "model_type": "Pipeline"
+}

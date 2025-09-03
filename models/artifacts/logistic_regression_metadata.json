@@ -1,0 +1,22 @@
+{
+  "model_name": "logistic_regression",
+  "timestamp": "2025-09-03T05:43:17.453988",
+  "metrics": {
+    "precision": 0.6,
+    "recall": 0.5,
+    "f1_score": 0.5454545454545454,
+    "roc_auc": 0.41666666666666663
+  },
+  "feature_names": [
+    "ticket_age_hrs",
+    "num_transfers",
+    "num_msgs_first_2h",
+    "avg_response_time_secs",
+    "region",
+    "experience_years",
+    "sentiment",
+    "age_transfers_interaction",
+    "msgs_per_response_ratio"
+  ],
+  "model_type": "Pipeline"
+}
