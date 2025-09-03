@@ -221,3 +221,34 @@ Understand *why* the model makes predictions and provide human-readable explanat
   - **Static plots**:
     - `feature_importance.png` → mean |SHAP| per feature  
     - `feature_direction.png` → whether feature increases/decreases escalation risk  
+
+## 🚀 Sprint 9 — Inference API (FastAPI)
+
+### 🎯 Goal
+Expose the trained model as a REST API with explainability support.
+
+### ✅ What was done
+- Created `api/inference_api.py` with:
+  - **Health check** (`/health`)
+  - **Model listing** (`/models`)
+  - **Prediction** (`/predict`) → accepts JSON, returns risk score + explanation
+  - **Explanations lookup** (`/explanations/{ticket_id}`)
+  - **Debugging endpoint** (`/debug/paths`)
+- Added:
+  - Model caching at startup
+  - Explanation cache from `ticket_top_features.json`
+  - Preprocessing aligned with training metadata
+  - Structured error handling and logging
+- Supports **multiple models** (`xgboost`, `random_forest`, `logistic_regression`)
+
+## 🚀 Sprint 10 — LLM Explanation Module
+- Added `api/llm_explainer.py`
+- Uses free local LLM (`flan-t5-small`) for natural language explanations
+- Integrated into `/predict` API response as `llm_explanation`
+
+## 🚀 Sprint 11 — Dashboard MVP (Streamlit)
+- Added `dashboard/app.py`
+- Features:
+  - Filter tickets by risk score
+  - Ticket detail page with SHAP + LLM explanation
+  - Export results to CSV
