@@ -176,3 +176,48 @@ Merge structured + text features with labels into a training dataset.
 - Performed quick data quality checks (missing values, label distribution).
 
 
+## 🚀 Sprint 7 — Baseline Model Training
+
+### 🎯 Goal
+Train baseline models on the assembled feature store dataset and evaluate them.  
+
+### ✅ What was done
+- Implemented **data validation**:
+  - Multiple CSV search paths
+  - Fallback to Supabase `features_store` table
+  - Auto-build features if missing
+- Added **feature engineering**:
+  - Interaction features (e.g., `ticket_age_hrs * num_transfers`)
+  - Ratio features (e.g., `num_msgs_first_2h / avg_response_time_secs`)
+- Implemented **time-based train/test split**
+- Built **preprocessing pipelines**:
+  - Numeric: median imputation + scaling  
+  - Categorical: imputation + one-hot encoding  
+- Trained 3 baseline models:
+  - Logistic Regression
+  - XGBoost
+  - Random Forest
+- Evaluated with:
+  - Precision, Recall, F1, AUC
+  - Confusion matrix
+- Saved results as **artifacts**:
+  - Trained models (`.joblib`)
+  - Metadata (`.json`)
+  - Comparison table (`model_comparison.csv`)
+
+## 🚀 Sprint 8 — Explainability (SHAP)
+
+### 🎯 Goal
+Understand *why* the model makes predictions and provide human-readable explanations.
+
+### ✅ What was done
+- Built `models/explainability.py` with:
+  - **Data + model validation** (multiple load paths, fallback to Supabase or artifacts)
+  - **Preprocessing consistency** (reuse model’s preprocessor, fallback manual encoding)
+  - **SHAP explainability** (TreeExplainer, LinearExplainer, KernelExplainer)
+  - **Fallback feature importance** if SHAP fails
+  - **Per-ticket top features** (saved in JSON)
+  - **Global feature importance** (saved in CSV)
+  - **Static plots**:
+    - `feature_importance.png` → mean |SHAP| per feature  
+    - `feature_direction.png` → whether feature increases/decreases escalation risk  

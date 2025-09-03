@@ -1,0 +1,222 @@
+{
+  "generated_at": "2025-09-03T05:57:39.248622",
+  "total_tickets": 8,
+  "ticket_features": [
+    {
+      "ticket_id": 54,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 55,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 56,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 57,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 58,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 59,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 60,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "South",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    },
+    {
+      "ticket_id": 61,
+      "top_features": [
+        {
+          "feature": "region_West",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_East",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        },
+        {
+          "feature": "region_South",
+          "shap_value": 0.1,
+          "contribution": "increases",
+          "feature_value": "West",
+          "original_feature": "region"
+        }
+      ],
+      "prediction_strength": 1.0
+    }
+  ]
+}
