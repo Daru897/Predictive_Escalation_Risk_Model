@@ -1,0 +1,15 @@
+services:
+  signaldesk:
+    build: ./web
+    ports:
+      - "3001:3001"
+    environment:
+      APP_ORIGIN: http://localhost:3001
+      COOKIE_SECURE: "false"
+      SETUP_KEY: ${SETUP_KEY:-}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+    volumes:
+      - signaldesk-data:/app/data
+    restart: unless-stopped
+volumes:
+  signaldesk-data:

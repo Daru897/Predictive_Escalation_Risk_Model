@@ -1,254 +1,65 @@
-markdown
-# Predictive Escalation Risk Model 🚨
+# SignalDesk — escalation monitoring for BPO operations
 
-**Proactively identify high-risk customer tickets to reduce SLA breaches and improve resolution efficiency.**
+A rebuilt product from the original Predictive Escalation Risk Model experiment. Import ticket CSVs or connect a customer-owned Zendesk account, inspect explainable risk signals, and assign follow-up actions.
 
-## 📌 Business Value
-**Problem:** 20-30% of customer escalations violate SLAs due to late detection  
-**Solution:** Machine learning model that:
-- Flags high-risk tickets in real-time
-- Provides explainable AI recommendations
-- Simulates 20%+ reduction in SLA breaches
+![SignalDesk operations dashboard](docs/dashboard-desktop.png)
 
-## 🎯 Key Metrics
-| Metric                  | Target       |
-|-------------------------|-------------|
-| Precision (Escalation)  | ≥ 0.7       |
-| Recall (Escalation)     | ≥ 0.6       |
-| SLA Breach Reduction    | ≥ 20% (simulated) |
-| Avg. Time-to-Escalation | ↓ 30%       |
+## Run locally
 
-## 🛠️ Technical Implementation
+Requires Node.js 24. No Python, database server, paid AI API, or Zendesk account is needed for the demo.
 
-### Data Pipeline
+```sh
+cd web
+npm ci
+npm run build
+npm start
+```
 
-    A[Postgres DB] --> B[Feature Engineering]
-    B --> C[XGBoost Model]
-    C --> D[FastAPI Endpoint]
-    D --> E[Streamlit Dashboard]
-# Core Features
-## Feature Type	Examples
-Text Analysis	OpenAI embeddings, sentiment, urgency keywords
-Interaction Patterns	Transfer count, response delays
-Contextual Signals	Customer tier, agent experience
-# 🚀 Quick Start
-## Prerequisites
-Python 3.10+
-PostgreSQL 14+
-OpenAI API key (for embeddings)
-bash
-# Clone & Setup
-git clone https://github.com/your-repo/predictive-escalation-risk.git
-cd predictive-escalation-risk
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-.\venv\Scripts\activate   # Windows
+Open http://127.0.0.1:3001. Choose **Explore the live demo** for an isolated workspace with fictional tickets. `npm start` runs both the web server and the Zendesk polling worker. `npm run dev` runs only the web server; run `npm run worker` separately if developing the connector (provide its environment variables in the shell).
 
-# Install
-pip install -r requirements.txt
-Configure Environment
-bash
-cp .env.example .env  # Linux/Mac
-copy .env.example .env  # Windows
-Edit .env:
+## What is included
 
-ini
-DB_HOST=localhost
-DB_PORT=5432
-DB_USER=your_user
-DB_PASS=your_password
-OPENAI_API_KEY=sk_test_123...
-📂 Project Structure
-text
-├── data/
-│   ├── sql/                 # Database schemas
-│   └── samples/             # Synthetic test data
-├── etl/
-│   ├── feature_engineering.py
-│   └── text_processing.py
-├── models/
-│   ├── train_model.ipynb
-│   └── inference.py
-├── api/                     # FastAPI endpoints
-├── dashboard/               # Streamlit app
-└── simulations/             # Business impact analysis
-# 🌟 Key Deliverables
-Jupyter Notebook: Model training with EDA
+- Public landing page and portfolio case study with a two-minute walkthrough.
+- Isolated seven-day demos and empty private workspaces.
+- Owner/read-only access keys, server-side sessions, viewer revocation.
+- CSV column mapping, row-level validation, preview, atomic upsert, sample file.
+- Priority queue, risk/queue/source/review filters, intervention owner and notes.
+- Deterministic risk index with point-by-point explanations and missing-data indicators.
+- Zendesk customer-hosted incremental polling, encrypted credentials, cursor checkpoints, retries, deletion handling, pause/disconnect, worker health and freshness indicators.
+- Queue snapshots, source-specific clearing, spreadsheet-safe CSV exports.
+- Docker, Compose, Render blueprint, automated checks.
+- Separate offline training/evaluation workflow with genuine outcome contracts, temporal split and a 24-hour embargo.
 
-FastAPI Endpoint: /predict with risk scores
+## Important product boundaries
 
-Streamlit Dashboard: Real-time risk monitoring
+The displayed risk index is **not an escalation probability**. The old model is not loaded. Original metrics came from 40 rows and are not evidence of production prediction quality. Read [the audit](docs/REPOSITORY-AUDIT.md) and [model methodology](docs/MODEL-CARD.md).
 
-Simulation Report: Business impact analysis
+Zendesk synchronization is **near-real-time polling**, not streaming or a webhook. It imports ticket metadata only; transfer/reopen counts, customer response delay, and SLA deadlines remain missing. Initial lookback defaults to 30 days, so older unchanged tickets are not a complete historical backlog. Customer-hosted API-token connections are supported; this is not a Zendesk Marketplace OAuth app.
 
-# 📊 Sample Output
-json
-{
-  "ticket_id": "TCKT-2024-5678",
-  "risk_score": 0.83,
-  "top_factors": [
-    "3+ agent transfers",
-    "Negative sentiment (-0.78)",
-    "High-value customer"
-  ],
-  "llm_explanation": "This ticket shows frustration patterns similar to 82% of historical escalations..."
-}
-# 🤝 Stakeholder Benefits
-Role	Use Case
-Service Managers	Optimize agent routing
-Team Leads	Prioritize high-risk tickets
-Product Managers	Identify systemic issues
-# 📅 Development Roadmap
-Week 1: Data pipeline & EDA
+Private workspace keys are shared credentials, not individual SSO accounts. SQLite persistence and one web/worker instance are intended for small pilots (10,000 tickets per workspace), not a large multi-tenant SaaS launch. No automatic Zendesk writes, Slack/email notifications, business-hours SLA engine, or trained production predictor is claimed.
 
-Week 2: Model training & validation
+## Guides
 
-Week 3: API + dashboard integration
+- [Setup, hosting, access and backups](docs/DEPLOYMENT.md)
+- [Zendesk integration and data contract](docs/ZENDESK.md)
+- [Product scope and roadmap](docs/PRODUCT-BRIEF.md)
+- [Model card and evaluation](docs/MODEL-CARD.md)
+- [Validation evidence](docs/VALIDATION.md)
+- [Portfolio and resume copy](docs/PORTFOLIO.md)
 
-Week 4: LLM explanations & alerting
+## Checks
 
-### Key Features:
-1. **Business-Focused** - Lead with ROI and stakeholder benefits
-2. **Visual Hierarchy** - Icons, tables, and mermaid diagrams for scannability
-3. **Technical Precision** - Clear specs without overwhelming detail
-4. **Actionable Setup** - Copy-paste ready commands
-5. **Storytelling** - Connects technical work to business outcomes
+```sh
+cd web
+npm run test
+npm run lint
+npm run build
+npm run typecheck
+npm run test:e2e
+```
 
+For offline research, use Python 3.12 and `research/requirements.txt`; the web application does not depend on that environment.
 
-## 🚀 Sprint 3 — ETL Pipeline (Supabase Integration)
+## Repository layout
 
-### Goal
-Automate data cleaning and transformation from raw Supabase tables into `_clean` tables, ready for feature engineering.
-
-### What was done
-- Created `etl/load_data.py`  
-- Added **table-specific cleaning functions**:
-  - `clean_customers` → validates emails, normalizes regions
-  - `clean_agents` → enforces numeric/non-negative `experience_years`, standardizes department names
-  - `clean_tickets` → validates timestamps, normalizes status & priority
-  - `clean_ticket_events` → validates event types, removes PII from descriptions
-- Created `_clean` tables (`customers_clean`, `agents_clean`, `tickets_clean`, `ticket_events_clean`) in Supabase
-- Inserted ETL logs into `etl_logs` table to track each run
-
-
--- Check cleaned tables
-SELECT COUNT(*) FROM tickets_clean;
-SELECT * FROM etl_logs ORDER BY run_time DESC;
-
-## 🚀 Sprint 4 — Core Feature Engineering (Non-Text)
-
-### Goal
-Generate engineered features from tickets and events for model training.
-
-### What was done
-- Created `etl/feature_engineering.py`
-- Extracted the following features:
-  - **ticket_age_hrs** → hours since ticket was created
-  - **num_transfers** → count of `"Updated"` events
-  - **num_msgs_first_2h** → number of `"Commented"` events within first 2 hours
-  - **avg_response_time_secs** → average gap (in seconds) between comment events
-  - **region** → customer region
-  - **experience_years** → agent experience
-- Stored results in a new table `features_core` in Supabase
-
-
-## 🚀 Sprint 5 — Text Processing Pipeline
-
-### Goal
-Generate embeddings and sentiment from ticket event text.
-
-### What was done
-- Cleaned text (removed PII, normalized case)
-- Aggregated all ticket events into one document per ticket
-- Generated embeddings using `sentence-transformers` (`all-MiniLM-L6-v2`)
-- Computed sentiment polarity with TextBlob
-- Stored results in `features_text` table
-
-## 🚀 Sprint 6 — Feature Store Assembly
-
-### Goal
-Merge structured + text features with labels into a training dataset.
-
-### What was done
-- Loaded `features_core` (numeric features), `features_text` (embeddings + sentiment), and `tickets` (escalated_flag).
-- Merged into a single table `features_store`.
-- Exported dataset to `data/training_dataset.csv`.
-- Performed quick data quality checks (missing values, label distribution).
-
-
-## 🚀 Sprint 7 — Baseline Model Training
-
-### 🎯 Goal
-Train baseline models on the assembled feature store dataset and evaluate them.  
-
-### ✅ What was done
-- Implemented **data validation**:
-  - Multiple CSV search paths
-  - Fallback to Supabase `features_store` table
-  - Auto-build features if missing
-- Added **feature engineering**:
-  - Interaction features (e.g., `ticket_age_hrs * num_transfers`)
-  - Ratio features (e.g., `num_msgs_first_2h / avg_response_time_secs`)
-- Implemented **time-based train/test split**
-- Built **preprocessing pipelines**:
-  - Numeric: median imputation + scaling  
-  - Categorical: imputation + one-hot encoding  
-- Trained 3 baseline models:
-  - Logistic Regression
-  - XGBoost
-  - Random Forest
-- Evaluated with:
-  - Precision, Recall, F1, AUC
-  - Confusion matrix
-- Saved results as **artifacts**:
-  - Trained models (`.joblib`)
-  - Metadata (`.json`)
-  - Comparison table (`model_comparison.csv`)
-
-## 🚀 Sprint 8 — Explainability (SHAP)
-
-### 🎯 Goal
-Understand *why* the model makes predictions and provide human-readable explanations.
-
-### ✅ What was done
-- Built `models/explainability.py` with:
-  - **Data + model validation** (multiple load paths, fallback to Supabase or artifacts)
-  - **Preprocessing consistency** (reuse model’s preprocessor, fallback manual encoding)
-  - **SHAP explainability** (TreeExplainer, LinearExplainer, KernelExplainer)
-  - **Fallback feature importance** if SHAP fails
-  - **Per-ticket top features** (saved in JSON)
-  - **Global feature importance** (saved in CSV)
-  - **Static plots**:
-    - `feature_importance.png` → mean |SHAP| per feature  
-    - `feature_direction.png` → whether feature increases/decreases escalation risk  
-
-## 🚀 Sprint 9 — Inference API (FastAPI)
-
-### 🎯 Goal
-Expose the trained model as a REST API with explainability support.
-
-### ✅ What was done
-- Created `api/inference_api.py` with:
-  - **Health check** (`/health`)
-  - **Model listing** (`/models`)
-  - **Prediction** (`/predict`) → accepts JSON, returns risk score + explanation
-  - **Explanations lookup** (`/explanations/{ticket_id}`)
-  - **Debugging endpoint** (`/debug/paths`)
-- Added:
-  - Model caching at startup
-  - Explanation cache from `ticket_top_features.json`
-  - Preprocessing aligned with training metadata
-  - Structured error handling and logging
-- Supports **multiple models** (`xgboost`, `random_forest`, `logistic_regression`)
-
-## 🚀 Sprint 10 — LLM Explanation Module
-- Added `api/llm_explainer.py`
-- Uses free local LLM (`flan-t5-small`) for natural language explanations
-- Integrated into `/predict` API response as `llm_explanation`
-
-## 🚀 Sprint 11 — Dashboard MVP (Streamlit)
-- Added `dashboard/app.py`
-- Features:
-  - Filter tickets by risk score
-  - Ticket detail page with SHAP + LLM explanation
-  - Export results to CSV
+`web/` is the supported product; `research/` is the new candidate-evaluation workflow. The original `api/`, `dashboard/`, `etl/`, `models/`, `notebooks/`, and misspelled UTF-16 `requirments.txt` remain historical reference material. Do not use them for the new runtime. The original README is archived in [docs/LEGACY-README.md](docs/LEGACY-README.md).

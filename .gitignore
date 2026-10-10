@@ -1,2 +1,15 @@
 venv/
-.env
+.venv/
+.env*
+!.env.example
+node_modules/
+.next/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+web/next-env.d.ts
+web/data/
+web/test-results/
+web/playwright-report/
+research/output/
+.DS_Store
