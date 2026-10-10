@@ -237,3 +237,120 @@ test("public and workspace pages are accessible at desktop and mobile widths", a
   await page.keyboard.press("Escape");
   await expect(page.getByRole("dialog")).not.toBeVisible();
 });
+
+test("owners preview, publish, export and restore workspace-specific business rules", async ({
+  page,
+  browser,
+}) => {
+  await page.goto("/monitor?demo=1");
+  await expect(
+    page.getByRole("heading", { name: "Ahead of the escalation." }),
+  ).toBeVisible();
+  await page.getByRole("button", { name: "Workspace", exact: true }).click();
+  await expect(
+    page.getByRole("heading", { name: "Business rules", exact: true }),
+  ).toBeVisible();
+  await page
+    .getByLabel("Policy name", { exact: true })
+    .fill("Priority-only pilot");
+  const firstRule = page.locator(".policy-rules details").first();
+  await firstRule.locator("summary").click();
+  await firstRule.getByLabel("Points", { exact: true }).fill("40");
+  await page.getByRole("button", { name: "Preview policy impact" }).click();
+  await expect(page.locator(".policy-impact")).toBeVisible();
+  await page.setViewportSize({ width: 390, height: 844 });
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  expect(
+    (
+      await new AxeBuilder({ page })
+        .withTags(["wcag2a", "wcag2aa", "wcag21aa"])
+        .analyze()
+    ).violations.map((v) => v.id),
+  ).toEqual([]);
+  await page.setViewportSize({ width: 1280, height: 900 });
+  await page
+    .locator(".policy-editor")
+    .screenshot({ path: path.resolve("../docs/business-rules.png") });
+  // JSON import supports reusable client policies, but cannot bypass validation or preview.
+  const current = await (await page.request.get("/api/workspace")).json();
+  const config = {
+    ...current.policy.config,
+    name: "Priority-only pilot",
+    rules: [],
+    bands: { watch: 10, high: 20, critical: 30 },
+  };
+  await page.getByLabel("Import policy JSON", { exact: true }).setInputFiles({
+    name: "rules.json",
+    mimeType: "application/json",
+    buffer: Buffer.from(JSON.stringify(config)),
+  });
+  await expect(
+    page.getByRole("button", { name: /Apply policy version/ }),
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "Preview policy impact" }).click();
+  await expect(
+    page.getByRole("heading", { name: /Preview: .* tickets change/ }),
+  ).toBeVisible();
+  expect(
+    (await (await page.request.get("/api/workspace")).json()).policy.revision,
+  ).toBe(0);
+  await page.getByRole("button", { name: "Apply policy version 1" }).click();
+  await expect(
+    page.getByText(
+      "Business rules applied. All current tickets now use the new policy.",
+    ),
+  ).toBeVisible();
+  let state = await (await page.request.get("/api/workspace")).json();
+  expect(state.policy.revision).toBe(1);
+  expect(
+    state.tickets.every((t: { risk: { score: number } }) => t.risk.score === 0),
+  ).toBe(true);
+  const csv = await (
+    await page.request.get("/api/workspace?export=csv")
+  ).text();
+  expect(csv).toContain("policy_revision");
+  const other = await browser.newContext();
+  await other.request.post("/api/session", {
+    headers: { Origin: "http://127.0.0.1:3101" },
+    data: { operation: "demo" },
+  });
+  expect(
+    (await (await other.request.get("/api/workspace")).json()).policy.revision,
+  ).toBe(0);
+  await other.close();
+  await page.getByRole("button", { name: "Load standard defaults" }).click();
+  await page.getByRole("button", { name: "Preview policy impact" }).click();
+  await page.getByRole("button", { name: "Apply policy version 2" }).click();
+  await expect(
+    page.getByText("Active policy: Standard support operations · Version 2"),
+  ).toBeVisible();
+  await page
+    .getByRole("button", { name: "Load version 1", exact: true })
+    .click();
+  await page.getByRole("button", { name: "Preview policy impact" }).click();
+  await page.getByRole("button", { name: "Apply policy version 3" }).click();
+  state = await (await page.request.get("/api/workspace")).json();
+  expect(state.policy.config.name).toBe("Priority-only pilot");
+  expect(state.policy.revision).toBe(3);
+  expect(
+    state.history.map((h: { policy_revision: number }) => h.policy_revision),
+  ).toEqual([3, 2, 1]);
+  await page.getByRole("button", { name: "Create viewer key" }).click();
+  const key = await page.locator(".key-panel code").innerText();
+  const viewer = await browser.newContext();
+  await viewer.request.post("/api/session", {
+    headers: { Origin: "http://127.0.0.1:3101" },
+    data: { operation: "login", key },
+  });
+  const denied = await viewer.request.post("/api/workspace", {
+    headers: { Origin: "http://127.0.0.1:3101" },
+    data: { operation: "policy-preview", config, revision: 3 },
+  });
+  expect(denied.status()).toBe(400);
+  expect((await denied.json()).error).toContain("Owner access");
+  await viewer.close();
+});

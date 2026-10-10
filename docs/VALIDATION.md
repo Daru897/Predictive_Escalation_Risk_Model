@@ -4,8 +4,8 @@
 | --- | --- |
 | Node 24 production standalone build | Passed |
 | TypeScript and ESLint | Passed |
-| Core domain/storage/import/connector tests | 11 passed |
-| Browser workflow/security/accessibility tests | 4 passed |
+| Core domain/storage/import/connector/policy tests | 18 passed |
+| Browser workflow/security/accessibility tests | 5 passed |
 | Standalone restart persistence scenario | Passed |
 | Python 3.12 candidate pipeline contract tests | 3 passed; synthetic smoke fixture only |
 | Production Node dependency audit | Zero known advisories |
@@ -21,3 +21,5 @@ Browser checks cover demo onboarding, inspect → assign → save → reload, CS
 The research tests verify labels, incomplete observation rejection, temporal boundaries with embargo, duplicate ticket rejection and JSON candidate/report output on synthetic data. Their synthetic model results are not retained or advertised as accuracy evidence.
 
 The five development-only lint dependency advisories and deployment limitations are explained in the deployment guide. Legacy Python code and binary artifacts are preserved but were not executed or certified.
+
+Business-rule validation covers default-score equivalence, typed configuration rejection, queue scopes, disabled/missing signals, tier aggregation, preview binding and expiry, concurrent revision checks, cross-workspace isolation, baseline migration and historical attribution. The browser workflow exercises JSON import, preview, publish, default restoration, loading an earlier version, export attribution and viewer denial.

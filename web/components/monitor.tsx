@@ -20,12 +20,21 @@ import {
   AlertCircle,
   LogOut,
 } from "lucide-react";
+import PolicyEditor from "./policy-editor";
+import { fieldLabels, type Policy, type Rule } from "@/lib/scoring/policy";
 import type { Ticket, Action } from "@/lib/domain";
 import { columns, required } from "@/lib/fields";
 type Risk = {
   score: number;
   band: string;
-  factors: { label: string; points: number; action: string }[];
+  factors: {
+    ruleId: string;
+    field: Rule["field"];
+    observed: number | string;
+    label: string;
+    points: number;
+    action: string;
+  }[];
   missing: string[];
   coverage: number;
   ageHours: number;
@@ -45,7 +54,14 @@ type State = {
     paused: number;
     has_cursor: number;
   };
-  history: { at: number; high: number; total: number }[];
+  policy: { revision: number; config: Policy };
+  policyHistory: { revision: number; config: Policy; created: number }[];
+  history: {
+    at: number;
+    high: number;
+    total: number;
+    policy_revision: number;
+  }[];
   generatedAt: string;
   workerSeenAt: number | null;
   zendeskAvailable: boolean;
@@ -200,7 +216,9 @@ export default function Monitor() {
   const active =
     state?.tickets.filter((t) => !["solved", "closed"].includes(t.status)) ||
     [];
-  const urgent = active.filter((t) => t.risk.score >= 45);
+  const urgent = active.filter((t) =>
+    ["High", "Critical"].includes(t.risk.band),
+  );
   const filtered = (state?.tickets || [])
     .filter(
       (t) =>
@@ -402,7 +420,7 @@ export default function Monitor() {
             <Shield size={19} />
             <strong>Explainable by design</strong>
             <p>
-              Risk index v1.0
+              Policy version {state.policy.revision}
               <br />
               Rules, not probabilities.
             </p>
@@ -1153,9 +1171,10 @@ export default function Monitor() {
                       {[...state.history].reverse().map((h, i) => (
                         <div
                           key={i}
-                          title={`${stamp(h.at)}: ${h.high} high or critical / ${h.total} open`}
+                          title={`${stamp(h.at)}: ${h.high} high or critical / ${h.total} open · Policy v${h.policy_revision}`}
                         >
                           <strong>{h.high}</strong>
+                          <small>Policy v{h.policy_revision}</small>
                           <i
                             style={{
                               height: Math.max(
@@ -1194,7 +1213,9 @@ export default function Monitor() {
                   <p>Where high and critical tickets sit right now.</p>
                   {[...new Set(active.map((t) => t.group))].map((g) => {
                     const all = active.filter((t) => t.group === g),
-                      high = all.filter((t) => t.risk.score >= 45).length;
+                      high = all.filter((t) =>
+                        ["High", "Critical"].includes(t.risk.band),
+                      ).length;
                     return (
                       <div className="group-row" key={g}>
                         <div>
@@ -1217,30 +1238,37 @@ export default function Monitor() {
               <section className="panel method">
                 <h2>How the risk index works</h2>
                 <p>
-                  Contributions are added and capped at 100. Closed or solved
-                  tickets score zero. Critical ≥70, High ≥45, Watch ≥25, Low
-                  &lt;25.
+                  Active policy: {state.policy.config.name} · Version{" "}
+                  {state.policy.revision}. Contributions are capped at 100.
+                  Closed or solved tickets score zero. Critical ≥
+                  {state.policy.config.bands.critical}, High ≥
+                  {state.policy.config.bands.high}, Watch ≥
+                  {state.policy.config.bands.watch}.
                 </p>
                 <div className="three-columns">
-                  {[
-                    ["Priority", "Urgent +25; high +15"],
-                    ["Ticket age", "8h +5; 24h +12; 72h +20"],
-                    ["No ticket update", "8h +8; 24h +15"],
-                    ["Transfers / reopens", "+5 each, capped at 15 / 10"],
-                    ["Supplied response delay", "2h +8; 8h +15"],
-                    ["Supplied SLA deadline", "Within 2h +20; past due +30"],
-                  ].map(([n, v]) => (
-                    <div key={n}>
-                      <strong>{n}</strong>
-                      <p>{v}</p>
-                    </div>
-                  ))}
+                  {state.policy.config.rules
+                    .filter((r) => r.enabled)
+                    .map((r) => (
+                      <div key={r.id}>
+                        <strong>{r.name}</strong>
+                        <p>
+                          {r.points} points{r.perUnit ? " per event" : ""},
+                          maximum {r.cap}.{" "}
+                          {r.queues.length
+                            ? "Queues: " + r.queues.join(", ")
+                            : "All queues"}
+                        </p>
+                      </div>
+                    ))}
                 </div>
                 <p className="notice">
-                  These thresholds are operational defaults, not a trained
-                  model. “No ticket update” is not customer waiting time. SLA
-                  calculations use the supplied absolute deadline; they do not
-                  calculate Zendesk business hours or SLA policies.
+                  Highest matching contribution per signal wins. These are
+                  configurable operational rules, not a trained model.
+                  Historical snapshots keep their original policy version;
+                  changes between versions may reflect rule edits rather than
+                  changes to ticket risk. “No ticket update” is not customer
+                  waiting time, and supplied SLA deadlines do not calculate
+                  business hours.
                 </p>
               </section>
             </>
@@ -1258,6 +1286,18 @@ export default function Monitor() {
                   </p>
                 </div>
               </div>
+              <PolicyEditor
+                key={state.policy.revision}
+                active={state.policy}
+                history={state.policyHistory}
+                owner={owner}
+                onPublished={async () => {
+                  await refresh();
+                  setMessage(
+                    "Business rules applied. All current tickets now use the new policy.",
+                  );
+                }}
+              />
               <div className="source-grid">
                 <section className="panel">
                   <h2>Share a read-only view</h2>
@@ -1401,10 +1441,13 @@ export default function Monitor() {
             </div>
             <h3>Why this ticket stands out</h3>
             {selected.risk.factors.map((f) => (
-              <div className="factor" key={f.label}>
+              <div className="factor" key={f.ruleId}>
                 <span>+{f.points}</span>
                 <div>
                   <strong>{f.label}</strong>
+                  <p>
+                    {fieldLabels[f.field]}: {f.observed}
+                  </p>
                   <p>{f.action}</p>
                 </div>
               </div>

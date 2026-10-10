@@ -11,10 +11,13 @@ import {
   hash,
   limit,
   tickets,
+  currentPolicy,
 } from "@/lib/db";
 import { inspectCSV, importCSV, csvCell } from "@/lib/imports";
 import { connect } from "@/lib/zendesk";
 import { scoreTicket } from "@/lib/domain";
+import { policySchema } from "@/lib/scoring/policy";
+import { previewPolicy, publishPolicy } from "@/lib/scoring/service";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 export async function GET(req: NextRequest) {
@@ -30,6 +33,7 @@ export async function GET(req: NextRequest) {
           "priority",
           "risk_index",
           "risk_band",
+          "policy_revision",
           "review_status",
           "owner",
           "note",
@@ -45,6 +49,7 @@ export async function GET(req: NextRequest) {
           t.priority,
           String(t.risk.score),
           t.risk.band,
+          String(state.policy.revision),
           t.action?.status || "unreviewed",
           t.action?.owner || "",
           t.action?.note || "",
@@ -69,6 +74,17 @@ export async function GET(req: NextRequest) {
   }
 }
 const operation = z.discriminatedUnion("operation", [
+  z.object({
+    operation: z.literal("policy-preview"),
+    config: policySchema,
+    revision: z.number().int().min(0),
+  }),
+  z.object({
+    operation: z.literal("policy-publish"),
+    config: policySchema,
+    revision: z.number().int().min(0),
+    previewToken: z.string().min(20).max(100),
+  }),
   z.object({ operation: z.literal("inspect"), content: z.string() }),
   z.object({
     operation: z.literal("import"),
@@ -106,6 +122,18 @@ export async function POST(req: NextRequest) {
     limit(s.workspace);
     const input = operation.parse(await body(req));
     switch (input.operation) {
+      case "policy-preview":
+        return NextResponse.json(
+          previewPolicy(s.workspace, input.config, input.revision),
+        );
+      case "policy-publish":
+        publishPolicy(
+          s.workspace,
+          input.config,
+          input.revision,
+          input.previewToken,
+        );
+        break;
       case "inspect": {
         const r = inspectCSV(input.content);
         return NextResponse.json({
@@ -121,9 +149,14 @@ export async function POST(req: NextRequest) {
             total: r.total,
             errorCount: r.errorCount,
             errors: r.errors,
-            preview: r.tickets
-              .slice(0, 5)
-              .map((t) => ({ ...t, risk: scoreTicket(t) })),
+            preview: r.tickets.slice(0, 5).map((t) => ({
+              ...t,
+              risk: scoreTicket(
+                t,
+                Date.now(),
+                currentPolicy(s.workspace).config,
+              ),
+            })),
           });
         if (r.errorCount)
           throw new Error(

@@ -28,7 +28,7 @@ Time from a flag to first review, proportion of high-risk tickets with a named i
 
 1. Pilot with authorized real ticket metadata; validate missing fields and account API availability.
 2. Individual SSO users, revocable invitations, audit identities and managed Postgres.
-3. Per-client rule configuration and review-capacity thresholds, backed by operations feedback.
+3. Refine the implemented per-workspace/queue rule editor with review-capacity thresholds backed by operations feedback.
 4. Zendesk metric/SLA and audit ingestion, including business-hour semantics, before claiming those signals.
 5. Genuine escalation labels and robust chronological evaluation; external holdout, calibration and capacity-based threshold selection before model serving.
 6. Zendesk-approved third-party integration strategy, distributed worker queues, retention policies and alert delivery with deduplication.

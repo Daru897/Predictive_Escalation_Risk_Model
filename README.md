@@ -25,6 +25,7 @@ Open http://127.0.0.1:3001. Choose **Explore the live demo** for an isolated wor
 - CSV column mapping, row-level validation, preview, atomic upsert, sample file.
 - Priority queue, risk/queue/source/review filters, intervention owner and notes.
 - Deterministic risk index with point-by-point explanations and missing-data indicators.
+- Workspace business-rule editor: queue scopes, thresholds, points, previews, version history, restore and JSON import/export.
 - Zendesk customer-hosted incremental polling, encrypted credentials, cursor checkpoints, retries, deletion handling, pause/disconnect, worker health and freshness indicators.
 - Queue snapshots, source-specific clearing, spreadsheet-safe CSV exports.
 - Docker, Compose, Render blueprint, automated checks.
@@ -43,6 +44,7 @@ Private workspace keys are shared credentials, not individual SSO accounts. SQLi
 - [Setup, hosting, access and backups](docs/DEPLOYMENT.md)
 - [Zendesk integration and data contract](docs/ZENDESK.md)
 - [Product scope and roadmap](docs/PRODUCT-BRIEF.md)
+- [Business rule customization and modular architecture](docs/BUSINESS-RULES.md)
 - [Model card and evaluation](docs/MODEL-CARD.md)
 - [Validation evidence](docs/VALIDATION.md)
 - [Portfolio and resume copy](docs/PORTFOLIO.md)

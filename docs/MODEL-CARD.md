@@ -2,7 +2,7 @@
 
 ## Serving behavior
 
-The product serves `risk-index-v1`, a deterministic operational score from 0–100. It does not serve a machine-learned probability. Optional missing fields add zero, but their absence is shown. Therefore low score does not prove low escalation likelihood. Closed/solved tickets score zero. Rules and contributions are visible in Trends and each ticket detail.
+The product serves a deterministic operational score from 0–100 through a versioned workspace policy. The original `risk-index-v1` configuration is preserved as policy version 0. Owners can edit conditions and contributions through [Business rules](BUSINESS-RULES.md), preview their impact, and publish a new revision. It does not serve a machine-learned probability. Optional missing fields add zero, but their absence is shown. Therefore low score does not prove low escalation likelihood. Closed/solved tickets score zero. Rules and contributions are visible in Trends and each ticket detail.
 
 Priority, age, inactivity, supplied transfer/reopen counts, supplied response delay and supplied SLA deadline drive the score. Age/inactivity are recomputed on each workspace read. They are wall-clock values, not business-hours calculations. Agent experience, geography, customer monetary value, demographics, text sentiment and LLM explanations are not used. Recommendations are deterministic workflow prompts for human review.
 

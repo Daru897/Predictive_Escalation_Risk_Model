@@ -1588,3 +1588,126 @@ th {
     padding: 5px 6px;
   }
 }
+.policy-editor {
+  margin-bottom: 24px;
+}
+.policy-editor fieldset {
+  border: 0;
+  margin: 0;
+  padding: 0;
+  min-width: 0;
+}
+.policy-editor .section-title {
+  align-items: start;
+}
+.policy-editor .check {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.policy-editor .check input {
+  width: auto;
+  margin: 0;
+}
+.policy-editor .band-inputs {
+  gap: 15px;
+}
+.policy-rules {
+  margin: 20px 0;
+}
+.policy-rules details {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  margin: 10px 0;
+  background: #fcfdf9;
+}
+.policy-rules summary {
+  padding: 15px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.policy-rules summary .badge {
+  float: right;
+  margin-left: 10px;
+}
+.policy-rule-body {
+  padding: 0 20px 20px;
+  border-top: 1px solid var(--line);
+}
+.policy-rule-body .two-columns {
+  gap: 0 20px;
+}
+.policy-editor .import-policy {
+  position: relative;
+  margin: 0;
+  overflow: hidden;
+  cursor: pointer;
+}
+.import-policy input {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  opacity: 0;
+  cursor: pointer;
+  height: 100%;
+}
+.import-policy:focus-within {
+  outline: 3px solid #73926d;
+  outline-offset: 3px;
+}
+.preview-policy {
+  margin-top: 22px;
+}
+.policy-impact {
+  margin-top: 24px;
+  border: 1px solid #cbd9bf;
+  background: #f0f5e9;
+  padding: 20px;
+  border-radius: 8px;
+}
+.policy-impact p {
+  font-size: 12px;
+}
+.policy-history {
+  margin-top: 25px;
+  border-top: 1px solid var(--line);
+  padding-top: 20px;
+}
+.policy-history > div {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 15px;
+  padding: 10px 0;
+  font-size: 12px;
+}
+.policy-history p {
+  font-size: 12px;
+}
+@media (max-width: 760px) {
+  .policy-editor .three-columns {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .policy-rules summary {
+    padding: 12px;
+    font-size: 11px;
+  }
+  .policy-rules summary .badge {
+    float: none;
+    display: table;
+    margin: 8px 0 0;
+  }
+  .policy-rule-body {
+    padding: 0 12px 16px;
+  }
+  .policy-history > div {
+    align-items: start;
+    flex-direction: column;
+  }
+  .policy-editor .section-title {
+    flex-direction: column;
+  }
+}

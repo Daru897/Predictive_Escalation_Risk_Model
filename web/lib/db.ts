@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import { createHash, randomBytes } from "node:crypto";
 import { sampleTickets, type Ticket, type Action, scoreTicket } from "./domain";
+import { DEFAULT_POLICY, policySchema, type Policy } from "./scoring/policy";
 let instance: DatabaseSync;
 export function db() {
   if (instance) return instance;
@@ -17,9 +18,30 @@ export function db() {
  CREATE TABLE IF NOT EXISTS actions(workspace TEXT REFERENCES workspaces(id) ON DELETE CASCADE,key TEXT,data TEXT NOT NULL,PRIMARY KEY(workspace,key));
  CREATE TABLE IF NOT EXISTS connections(workspace TEXT PRIMARY KEY REFERENCES workspaces(id) ON DELETE CASCADE,subdomain TEXT NOT NULL,secret TEXT NOT NULL,cursor TEXT,start_time INTEGER NOT NULL,next_sync INTEGER NOT NULL,last_sync INTEGER,error TEXT,version TEXT NOT NULL,paused INTEGER DEFAULT 0);
  CREATE TABLE IF NOT EXISTS snapshots(id INTEGER PRIMARY KEY,workspace TEXT REFERENCES workspaces(id) ON DELETE CASCADE,at INTEGER,high INTEGER,total INTEGER);
+ CREATE TABLE IF NOT EXISTS policies(workspace TEXT REFERENCES workspaces(id) ON DELETE CASCADE,revision INTEGER,config TEXT NOT NULL,created INTEGER NOT NULL,PRIMARY KEY(workspace,revision));
+ CREATE TABLE IF NOT EXISTS policy_previews(id TEXT PRIMARY KEY,workspace TEXT REFERENCES workspaces(id) ON DELETE CASCADE,revision INTEGER,policy_hash TEXT,tickets_hash TEXT,expires INTEGER);
  CREATE TABLE IF NOT EXISTS runtime_status(key TEXT PRIMARY KEY,value INTEGER);
  CREATE TABLE IF NOT EXISTS limits(key TEXT PRIMARY KEY,count INTEGER,until INTEGER);
  `);
+  instance.exec("BEGIN IMMEDIATE");
+  try {
+    const columns = instance.prepare("PRAGMA table_info(snapshots)").all() as {
+      name: string;
+    }[];
+    if (!columns.some((c) => c.name === "policy_revision"))
+      instance.exec(
+        "ALTER TABLE snapshots ADD COLUMN policy_revision INTEGER NOT NULL DEFAULT 0",
+      );
+    instance
+      .prepare(
+        "INSERT OR IGNORE INTO policies(workspace,revision,config,created) SELECT id,0,?,created FROM workspaces",
+      )
+      .run(JSON.stringify(DEFAULT_POLICY));
+    instance.exec("COMMIT");
+  } catch (error) {
+    instance.exec("ROLLBACK");
+    throw error;
+  }
   return instance;
 }
 export const hash = (s: string) => createHash("sha256").update(s).digest("hex");
@@ -46,6 +68,9 @@ export function createWorkspace(name: string, mode: "demo" | "private") {
     db()
       .prepare("INSERT INTO keys VALUES(?,?,?)")
       .run(hash(ownerKey), id, "owner");
+    db()
+      .prepare("INSERT INTO policies VALUES(?,?,?,?)")
+      .run(id, 0, JSON.stringify(DEFAULT_POLICY), Date.now());
     if (mode === "demo") upsert(id, sampleTickets());
     return { id, ownerKey };
   });
@@ -98,14 +123,36 @@ export function upsert(workspace: string, items: Ticket[]) {
     throw new Error("Workspace limit of 10,000 tickets reached.");
   for (const t of items) stmt.run(workspace, t.key, JSON.stringify(t));
 }
+export function currentPolicy(workspace: string): {
+  revision: number;
+  config: Policy;
+} {
+  const row = db()
+    .prepare(
+      "SELECT revision,config FROM policies WHERE workspace=? ORDER BY revision DESC LIMIT 1",
+    )
+    .get(workspace) as { revision: number; config: string } | undefined;
+  return row
+    ? {
+        revision: row.revision,
+        config: policySchema.parse(JSON.parse(row.config)),
+      }
+    : { revision: 0, config: structuredClone(DEFAULT_POLICY) };
+}
 export function snapshot(workspace: string) {
+  const policy = currentPolicy(workspace),
+    now = Date.now();
   const all = tickets(workspace).filter(
     (t) => !["solved", "closed"].includes(t.status),
   );
-  const high = all.filter((t) => scoreTicket(t).score >= 45).length;
+  const high = all.filter(
+    (t) => scoreTicket(t, now, policy.config).score >= policy.config.bands.high,
+  ).length;
   db()
-    .prepare("INSERT INTO snapshots(workspace,at,high,total) VALUES(?,?,?,?)")
-    .run(workspace, Date.now(), high, all.length);
+    .prepare(
+      "INSERT INTO snapshots(workspace,at,high,total,policy_revision) VALUES(?,?,?,?,?)",
+    )
+    .run(workspace, now, high, all.length, policy.revision);
   db()
     .prepare(
       "DELETE FROM snapshots WHERE workspace=? AND id NOT IN (SELECT id FROM snapshots WHERE workspace=? ORDER BY id DESC LIMIT 100)",
@@ -113,6 +160,8 @@ export function snapshot(workspace: string) {
     .run(workspace, workspace);
 }
 export function readWorkspace(s: NonNullable<ReturnType<typeof session>>) {
+  const policy = currentPolicy(s.workspace),
+    now = Date.now();
   const actions = Object.fromEntries(
     (
       db()
@@ -128,15 +177,27 @@ export function readWorkspace(s: NonNullable<ReturnType<typeof session>>) {
   return {
     ...s,
     workspace: undefined,
+    policy,
+    policyHistory: (
+      db()
+        .prepare(
+          "SELECT revision,config,created FROM policies WHERE workspace=? ORDER BY revision DESC LIMIT 20",
+        )
+        .all(s.workspace) as {
+        revision: number;
+        config: string;
+        created: number;
+      }[]
+    ).map((r) => ({ ...r, config: JSON.parse(r.config) as Policy })),
     tickets: tickets(s.workspace).map((t) => ({
       ...t,
-      risk: scoreTicket(t),
+      risk: scoreTicket(t, now, policy.config),
       action: actions[t.key] || null,
     })),
     connection: connection || null,
     history: db()
       .prepare(
-        "SELECT at,high,total FROM snapshots WHERE workspace=? ORDER BY id DESC LIMIT 30",
+        "SELECT at,high,total,policy_revision FROM snapshots WHERE workspace=? ORDER BY id DESC LIMIT 30",
       )
       .all(s.workspace),
     workerSeenAt:
@@ -159,6 +220,7 @@ export function limit(key: string, max = 100, ms = 60000) {
   if (r.count > max) throw new Error("Too many requests. Try again later.");
 }
 export function prune() {
+  db().prepare("DELETE FROM policy_previews WHERE expires<?").run(Date.now());
   db()
     .prepare("DELETE FROM workspaces WHERE mode='demo' AND created<?")
     .run(Date.now() - 7 * 86400000);
