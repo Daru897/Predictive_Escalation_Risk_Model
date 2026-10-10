@@ -1,0 +1,4 @@
+id,subject,status,priority,created_at,updated_at,group,assignee,transfers,reopens,response_delay_hours,sla_due_at
+CSV-001,Refund delayed after return,open,urgent,2026-10-01T08:00:00Z,2026-10-08T12:00:00Z,Commerce support,Maya,3,1,6,2026-10-10T12:00:00Z
+CSV-002,Account verification pending,pending,high,2026-10-05T10:00:00Z,2026-10-09T14:00:00Z,Account services,Ravi,1,0,2,
+CSV-003,Update shipping address,solved,normal,2026-10-02T09:00:00Z,2026-10-03T10:00:00Z,Commerce support,Alex,0,0,0,
